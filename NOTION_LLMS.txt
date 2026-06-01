@@ -1,0 +1,882 @@
+# NCC Notion Workspace — LLMS Reference
+
+> Complete AI-facing reference for the NCC Notion workspace.
+> Sections: STRUCTURE · PROPERTIES · VIEWS · FORMULAS · AUTOMATIONS · KNOWN ISSUES · MCP PATTERNS
+> Built from live workspace reads. Last updated: 2026-06-01.
+> Use the section you need — each is self-contained.
+
+---
+
+# PART 1 — STRUCTURE
+
+## Workspace Navigation
+
+| Page | URL |
+|------|-----|
+| NCC — MAIN (command index) | https://www.notion.so/33e07e366ebf803a83b6c8fc0714c610 |
+| ByteHub (operating hub) | https://www.notion.so/33e07e366ebf81db95f1c5c7799f9e58 |
+| Schema Router | https://www.notion.so/73c131889ba9408a8835dd44afa3e6da |
+| NCC Master Plan v1.0 | https://www.notion.so/37207e366ebf81bebd00ef465786307d |
+| Archived References | https://www.notion.so/c4d96db49ebf4dc0a9ac835102b90e06 |
+
+## Database Catalog
+
+| # | Database | Page URL | Collection ID | Section |
+|---|----------|----------|---------------|---------|
+| 1 | Tasks | https://www.notion.so/33e07e366ebf818a9e65db11f6981afd | collection://33e07e36-6ebf-81f6-97a0-000b9caa4fd6 | Work management |
+| 2 | Departments | https://www.notion.so/33e07e366ebf81f1b07cc75edb27ca0e | collection://33e07e36-6ebf-81e1-acad-000b39c934a8 | Organization & services |
+| 3 | Services | https://www.notion.so/33e07e366ebf8150b385e9dbd871540a | collection://33e07e36-6ebf-811e-9218-000b1ff25014 | Organization & services |
+| 4 | Business Reference | https://www.notion.so/33e07e366ebf810bb9e8f913bb2d7a91 | collection://33e07e36-6ebf-81cc-ba0e-000bb570579a | Organization & services |
+| 5 | Email Accounts | https://www.notion.so/33e07e366ebf817fae68faba51aa016f | collection://33e07e36-6ebf-817d-a722-000b925eaf71 | Accounts & identities |
+| 6 | Domains | https://www.notion.so/33e07e366ebf817ba249e619bf6bc61e | collection://33e07e36-6ebf-812b-9f26-000b02522d56 | Accounts & identities |
+| 7 | Accounts | https://www.notion.so/33e07e366ebf819f8443e3f02ff441db | collection://33e07e36-6ebf-8162-8550-000bc09d064e | Accounts & identities |
+| 8 | Profiles | https://www.notion.so/33e07e366ebf81bcbd9dcfd08380ef62 | collection://33e07e36-6ebf-81c7-80ba-000bc501d754 | Accounts & identities |
+| 9 | Payments | https://www.notion.so/33e07e366ebf81f2844cc8bb5ca42db9 | collection://33e07e36-6ebf-811b-93c4-000b3f320eeb | Finance & renewals |
+| 10 | Payment Schedules | https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82 | collection://33e07e36-6ebf-81f4-95a3-000bc103952a | Finance & renewals |
+| 11 | API Balances | https://www.notion.so/33e07e366ebf81b1a804daa74cbb671a | collection://33e07e36-6ebf-81bc-bc66-000bc9c1eb92 | API monitoring (⚠️ HANDOFF) |
+| 12 | API Usage Snapshots | https://www.notion.so/33e07e366ebf81c08b78c4cb94161a45 | collection://33e07e36-6ebf-81d0-8435-000b0230739d | API monitoring (⚠️ HANDOFF) |
+
+> ⚠️ API Balances and API Usage Snapshots are being handed off to another team. Do not modify.
+
+## Schema Viewing Layouts
+
+Read these before any schema change. Each has full property list + outgoing relations + known issues + next steps.
+
+| Database | Schema Layout URL |
+|----------|-------------------|
+| Accounts | https://www.notion.so/1a2d4f051d444ed48915fd7e473b358c |
+| Departments | https://www.notion.so/4df92c56660a423c83292a647866bb32 |
+| Tasks | https://www.notion.so/b8c1a435928f4f149ce774d92cd08ded |
+| Services | https://www.notion.so/b9f62a42d07241a39f25c8fd70659ecf |
+| Payment Schedules | https://www.notion.so/dc73f2674a52461ab633f4ee48d77fb3 |
+| Email Accounts | https://www.notion.so/68fbd5426acc422daaa9b190a2a20a2e |
+| Domains | https://www.notion.so/6f7bbaab95b34fa09e8e8c950ebba3e8 |
+| Payments | https://www.notion.so/81cdfc01cfbb4fba96fd275b3e7c6d89 |
+| Profiles | https://www.notion.so/cba7efa6e6854b5d944618d33bb6da7f |
+| API Balances | https://www.notion.so/cc81758c44e5451b93968288592f8bae |
+| API Usage Snapshots | https://www.notion.so/d07181453a054e08a042109c2285be45 |
+| Business Reference | https://www.notion.so/66ba0b2efd2f4b9ba53c06b6ccea1513 |
+
+## Relations Graph
+
+Full map of which databases connect to which. Read left → right as "has a relation pointing to."
+Dual (↔) means both sides of the relation are explicitly configured.
+
+```
+Payment Schedules → Accounts (Account, limit 1)
+Payment Schedules → Domains (Domain, multi)
+Payment Schedules → Services (Service Defaults, multi)
+Payment Schedules ↔ Payments (Payments / Schedule, dual)
+
+Payments → Accounts (Account, limit 1)
+Payments → Domains (Domain, limit 1 — one-way)
+Payments → Domains (Domain for Rollups, multi — two-way via Domains.Payments)
+Payments → Profiles (Entity, multi)
+Payments → Tasks (Task, limit 1)
+Payments ↔ Payment Schedules (Schedule / Payments — see above)
+
+Accounts ↔ Services (Service / Accounts, dual, limit 1 on Accounts side)
+Accounts ↔ Payments (Payments / Account)
+Accounts ↔ Payment Schedules (Payment Schedules / Account, limit 1 on Accounts side)
+Accounts → Domains (Domains Infrastructure)
+Accounts → Domains (Domains Registrar)
+Accounts → Email Accounts (Email Account, limit 1)
+Accounts → Profiles (Registered Name, limit 1)
+Accounts → Departments (End-User, limit 1)
+Accounts → API Balances (API Balances, multi)
+Accounts → Business Reference (Business Name, limit 1)
+
+Domains → Accounts (Registrar Account, limit 1)
+Domains → Accounts (Infrastructure Provider, limit 1)
+Domains ↔ Payments (Payments / Domain)
+Domains ↔ Payment Schedules (Payment Schedules / Domain)
+Domains → Departments (Requester, limit 1)
+
+Services → Accounts (Accounts — back-relation)
+Services → Departments (End-User for Rollup, limit 1)
+```
+
+## Finance Subsystem — Focused Relations Map
+
+The five databases that power payment tracking:
+
+```
+Services (grace/risk config)
+    ↑ Service Defaults relation
+    |
+Payment Schedules ──── Accounts ──── Domains
+    ↕                    |
+Payments ────────────────┘
+    |
+Tasks (linked task per payment)
+```
+
+---
+
+# PART 2 — PROPERTIES
+
+Properties are grouped by database. Within each database: writable first, then read-only.
+"Read-only" = formula, rollup, auto_increment_id, button, created_time, last_edited_time.
+
+---
+
+## Database: Payment Schedules - MAIN
+
+**collection://33e07e36-6ebf-81f4-95a3-000bc103952a**
+
+### Writable Properties
+
+| Property | Type | Options / Format | Notes |
+|----------|------|-----------------|-------|
+| Schedule Name | title | text | Primary record identifier |
+| Account | relation | → Accounts (limit 1) | Sets Account ID, Billing Cycle, Auto Renewal, Service rollups |
+| Domain | relation | → Domains (multi) | Domain associated with this schedule |
+| Service (Defaults) | relation | → Services (multi) | Source for grace days, at-risk days, risk notes |
+| Payments | relation | → Payments (multi) | Linked payment records |
+| Schedule Status | select | Active · Paused · Cancelled · Completed | Lifecycle state |
+| Budget Month | select | January … December | Month this schedule falls in for budgeting |
+| Expected Amount | number | Dollar | Anticipated charge amount |
+| Billing Date | date | ISO-8601 | The charge date |
+| Billing Start Date | date | ISO-8601 | Start of billing period |
+| Billing End Date | date | ISO-8601 | End of billing period |
+| Renewal/Charge Date | date | ISO-8601 | When renewal fires |
+| Invoice Due Date | date | ISO-8601 | Payment due date on invoice |
+| Last Invoice Date | date | ISO-8601 | Most recent invoice date |
+| Next Payment Due | date | ISO-8601 | Key input for risk formulas |
+| Payment Risk Timeline | date | ISO-8601 | Manual risk window override |
+| Invoices | url | URL string | Link to invoice document |
+| Notes | text | plain text | Free-form notes |
+
+### Read-Only Properties
+
+| Property | Type | Source | Derived from |
+|----------|------|--------|-------------|
+| Schedule Seq | auto_increment_id | system | Auto-assigned on create |
+| Account ID | rollup | Account → Account ID | Formula field on Accounts |
+| Billing Cycle | rollup | Account → Billing Cycle | Select field on Accounts |
+| Auto Renewal | rollup | Account → Default Auto Renewal | Checkbox on Accounts |
+| Service | rollup | Account → Service | Relation field on Accounts → Services |
+| Service Grace Days | rollup | Service (Defaults) → Grace Days | Number on Services |
+| Service At-Risk Lead Days | rollup | Service (Defaults) → At-Risk Lead Days | Number on Services |
+| Service Risk Timeline | rollup | Service (Defaults) → Payment Risk Timeline | Text on Services |
+| Service Risk Note | rollup | Service (Defaults) → Risk Note | Text on Services |
+| Cutoff Estimate | formula | dateAdd(Next Payment Due, Service Grace Days, "days") | ⚠️ resultType="text" should be "date" |
+| At-Risk Start | formula | dateSubtract(Next Payment Due, Service At-Risk Lead Days, "days") | ⚠️ resultType="text" should be "date" |
+
+---
+
+## Database: Payments - MAIN
+
+**collection://33e07e36-6ebf-811b-93c4-000b3f320eeb**
+
+### Writable Properties
+
+| Property | Type | Options / Format | Notes |
+|----------|------|-----------------|-------|
+| Payment ID | title | text | Should mirror Payment Code — set manually or via Apply Auto Title button |
+| Account | relation | → Accounts (limit 1) | |
+| Domain | relation | → Domains (limit 1, one-way) | ⚠️ Duplicate — see Domain (for Rollups) |
+| Domain (for Rollups) | relation | → Domains (multi, two-way) | Two-way paired relation via Domains.Payments |
+| Entity | relation | → Profiles (multi) | Individual or entity making payment |
+| Schedule | relation | → Payment Schedules (multi) | Which schedule this payment fulfills |
+| Task | relation | → Tasks (limit 1) | Task linked to this payment |
+| Payment Status | select | Pending · Paid · Failed · Refunded | |
+| Payment Method | select | Paypal · Crypto Currency · Credit Card · Bank Transfer | |
+| Currency | select | USD · EUR · GBP · CAD | |
+| Base Amount | number | Dollar | Pre-tax amount |
+| Tax Amount | number | Dollar | Tax portion |
+| Invoice Date | date | ISO-8601 | Date of invoice |
+| Payment Date | date | ISO-8601 | Date payment was made |
+| Receipt URL | url | URL string | Link to receipt |
+| Payment Reference | text | plain text | Transaction reference / memo |
+
+### Read-Only Properties
+
+| Property | Type | Notes |
+|----------|------|-------|
+| Payment Seq | auto_increment_id | Auto-assigned. Used by Payment Code formula |
+| Payment Code | formula | "PAY-" + zero-padded Payment Seq (e.g. PAY-0001) |
+| Total Amount | formula | Base Amount + Tax Amount → ⚠️ resultType="text" should be "number" |
+| Service | rollup | Account → Service (relation) |
+| Apply Auto Title | button | Copies Payment Code → Payment ID. Cannot be triggered via API |
+| Create Payment Task | button | Creates a linked Task. Cannot be triggered via API |
+
+---
+
+## Database: Services - MAIN
+
+**collection://33e07e36-6ebf-811e-9218-000b1ff25014**
+
+### Writable Properties
+
+| Property | Type | Options / Format | Notes |
+|----------|------|-----------------|-------|
+| Service Name | title | text | |
+| Service Status | select | Active · Pending · Trial · Paused · Deprecated · Cancelled | |
+| Service Category | select | AI & Automation · Analytics · Cloud Infrastructure · Communications · Compliance & Verification · CRM & Support · Data Services · Developer Tools · Domains / DNS · Email · Email Marketing · Payments & Billing · Productivity & Workspace · Remote Logins · Security / Password Mgmt · SMS & Verification · VPN & Privacy | |
+| Billing Cycle | select | Hybrid · Monthly · Quarterly · Annual · One-time | Default for accounts using this service |
+| Billing Behavior | select | Invoice date = due date · Net X days · Auto-charge on renewal · Manual pay required · Renewal date (auto-charge) · Usage-based post-period invoice | |
+| Pricing Model | select | Paid · Freemium · Varies | |
+| Payment Method | select | Paypal · Crypto Currency · Credit Card · Bank Transfer | Default payment method |
+| Risk Level | select | High · Medium · Low | Service-level risk classification |
+| Grace Days | number | number | Days after due date before service stops → feeds Payment Schedules.Cutoff Estimate |
+| At-Risk Lead Days | number | number | Days before due date to flag at-risk → feeds Payment Schedules.At-Risk Start |
+| Payment Risk Timeline | text | plain text | Narrative description of risk window |
+| Risk Note | text | plain text | What happens at cutoff → rolled up to Payment Schedules.Service Risk Note |
+| API Balance Tracking | select | No · Yes · Limited | |
+| API Balance Process | text | plain text | How API balances are monitored |
+| Service Description | text | plain text | Structured 4-part explanation (big picture, features, comparison, example) |
+| Documentation URL | url | URL | |
+| Dashboard URL | url | URL | |
+| Notes | text | plain text | |
+| Accounts | relation | → Accounts (multi, back-relation via Accounts.Service) | |
+| Accounts 1 | relation | → Accounts (multi) | Secondary back-relation — may be legacy |
+| End-User (For Rollup) | relation | → Departments (limit 1) | For department rollup |
+
+### Read-Only Properties
+
+| Property | Type | Source |
+|----------|------|--------|
+| Service Seq | auto_increment_id | Auto-assigned |
+| Service Code | formula | Derived code from service data |
+| Service ID | formula | Derived unique ID |
+| Department | rollup | End-User (For Rollup) → Department (select on Departments) |
+| Email Accounts | rollup | Accounts → Email Account (relation on Accounts → Email Accounts) |
+
+---
+
+## Database: Accounts - MAIN
+
+**collection://33e07e36-6ebf-8162-8550-000bc09d064e**
+
+### Writable Properties (selected — primary fields)
+
+| Property | Type | Options / Format | Notes |
+|----------|------|-----------------|-------|
+| Account Name | title | text | |
+| Account Status | select | Available · Active · Pending · Suspended · For Closure · For Transfer · Terminated · Inaccessible | |
+| Service | relation | → Services (limit 1) | Core link to service template |
+| Payment Schedules | relation | → Payment Schedules (limit 1) | |
+| Payments | relation | → Payments (multi) | All payments for this account |
+| Billing Cycle | select | Hybrid · Monthly · Quarterly · Annual · One-time · Credit-Based · Monthly + Needs checking · Credits | Account-level billing override |
+| Payment Method | select | Paypal · Crypto Currency · Credit Card · Bank Transfer · Crypto · Freemium · DISREGARD · NOT APPLICABLE · possible crypto · BTC · Other | |
+| Default Auto Renewal | checkbox | true/false | Rolled up to Payment Schedules.Auto Renewal |
+| Current Budget Month | select | 2026-01 through 2026-12 | |
+| Email Account | relation | → Email Accounts (limit 1) | |
+| Domains (Infrastructure) | relation | → Domains (multi) | |
+| Domains (Registrar) | relation | → Domains (multi) | |
+| Business Name | relation | → Business Reference (limit 1) | |
+| Registered Name | relation | → Profiles (limit 1) | |
+| End-User | relation | → Departments (limit 1) | Who uses this account |
+| Requester | relation | → Departments (limit 1) | Who requested this account |
+| API Balances | relation | → API Balances (multi) | |
+| Username | text | | |
+| Email Address | text | | |
+| Authentication Method | multi_select | Authenticator App · Password Only · Email Address · Single Sign-On (SSO) · Security Key | |
+| 2FA Enabled | checkbox | | |
+| API Added | checkbox | | |
+| Default Auto Renewal | checkbox | | Rolled up to schedules |
+| Keeper | checkbox | | Mark if account should be kept |
+| Needs Review | checkbox | | Flag for review |
+| Notes | text | | |
+| Owner | text | | |
+
+### Read-Only Properties (selected)
+
+| Property | Type | Source |
+|----------|------|--------|
+| Account Seq | auto_increment_id | Auto-assigned |
+| Account ID | formula | Derived unique ID (e.g. ACC-XXXX) — rolled up to Payment Schedules.Account ID |
+| Account Display Name | formula | Formatted display name |
+| Date Created | created_time | System |
+| Date Updated | last_edited_time | System |
+| Default Billing Cycle | rollup | Service → Billing Cycle |
+| Default Payment Method | rollup | Service → Payment Method |
+| Service Category | rollup | Service → Service Category |
+| Service Grace Days | rollup | Service → Grace Days |
+| Service At-Risk Lead Days | rollup | Service → At-Risk Lead Days |
+| Service Risk Note | rollup | Service → Risk Note |
+| Service Risk Timeline | rollup | Service → Payment Risk Timeline |
+| Risk Level | rollup | Service → Risk Level |
+| Login URL | rollup | Service → Dashboard URL |
+| Business Code | rollup | Business Name → Business Code |
+| Business Type | rollup | Business Name → Business Type |
+| Department | rollup | End-User → Department (select) |
+| API Balance Tracking | rollup | Service → API Balance Tracking |
+| Next Payment Due | rollup | Payments → Payment Date (latest) |
+
+---
+
+## Database: Domains - MAIN
+
+**collection://33e07e36-6ebf-812b-9f26-000b02522d56**
+
+### Writable Properties
+
+| Property | Type | Options / Format | Notes |
+|----------|------|-----------------|-------|
+| Domain Name | title | text | |
+| Domain Status | select | Active · Pending Renewal · Expired · Closed/Deleted | |
+| Environment | select | Production · Development · Staging · Test | |
+| Renewal Outcome | select | Renewed · Not Renewed · Cancelled · Pending | |
+| Expiry Date | date | ISO-8601 | |
+| Created Date (Override) | date | ISO-8601 | Manual creation date override |
+| Domain Provider | text | | Registrar or DNS provider name |
+| Domain Renewal | text | | Renewal notes or process |
+| Nameservers | text | | |
+| NameSilo Account | text | | |
+| Cloudflare Account | text | | |
+| Portfolio | text | | Which portfolio this domain belongs to |
+| Requested By | text | | |
+| Is Transferred | text | | Transfer status |
+| Renewal Notes | text | | |
+| Registrar Account | relation | → Accounts (limit 1) | Account that owns the registrar login |
+| Infrastructure Provider | relation | → Accounts (limit 1) | Account that hosts DNS/infrastructure |
+| Payments | relation | → Payments (multi, two-way) | All payments for this domain |
+| Payment Schedules | relation | → Payment Schedules (multi) | Schedules for this domain |
+| Requester | relation | → Departments (limit 1) | Who requested this domain |
+
+### Read-Only Properties
+
+| Property | Type | Source |
+|----------|------|--------|
+| Domain Seq | auto_increment_id | Auto-assigned |
+| Domain ID | formula | Derived unique ID |
+| Created Date | formula | Derived from Created Date (Override) or system date |
+| Days Until Expiry | formula | Days from today to Expiry Date |
+| Renewal Risk Level | formula | Risk classification based on days until expiry |
+| Department | rollup | Requester → Department |
+| Last Payment Date | rollup | Payments (via Domain for Rollups) → Payment Date (latest) |
+| Last Payment Amount | rollup | Payments (via Domain for Rollups) → Total Amount (formula) |
+| Create Renewal Task | button | Creates a renewal task — cannot be triggered via API |
+
+---
+
+# PART 3 — VIEWS
+
+Views define how data is displayed. Each view has a type, column order, optional filters/sorts/groups.
+To query a view: `notion-query-database-view` with the view_url pattern below.
+
+**View URL pattern:** `https://www.notion.so/{db-id-no-dashes}?v={view-id-no-dashes}`
+
+---
+
+## Views: Payment Schedules - MAIN
+
+| View Name | View ID | Type | Purpose |
+|-----------|---------|------|---------|
+| Default view | 33e07e366ebf81b990ed000cd1f708cd | table | Full record overview |
+| Recovery Audit | 33e07e366ebf81159 2ef000c0784739c | table | Identify schedules missing payments |
+
+### Default View — columns in order
+Schedule Name · Account · Service · Auto Renewal · Billing Cycle · Budget Month · Domain ·
+Expected Amount · Billing Date · Billing Start Date · Billing End Date · Next Payment Due ·
+Payment Risk Timeline · Notes · Payments · Schedule Status · Account ID
+
+**Query URL:**
+```
+https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82?v=33e07e366ebf81b990ed000cd1f708cd
+```
+
+### Recovery Audit View — columns in order
+Schedule Name · Account · Account ID · Service · Billing Cycle · Billing Date · Next Payment Due ·
+Payments · Schedule Status · Notes
+
+**Query URL:**
+```
+https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82?v=33e07e366ebf81159 2ef000c0784739c
+```
+
+**Purpose of Recovery Audit view:** Scoped to finding schedules with no linked payments.
+Check `Payments` column for null/empty rows — those are the recovery targets.
+
+---
+
+## Views: Payments - MAIN
+
+| View Name | View ID | Type | Purpose |
+|-----------|---------|------|---------|
+| Default view | 33e07e366ebf811e86e2000ceb0d217e | table | All payments, all columns |
+
+### Default View — columns in order
+Payment ID · Payment Status · Account · Service · Domain · Task · Payment Method · Currency ·
+Base Amount · Payment Date · Payment Code · Payment Reference · Create Payment Task ·
+Apply Auto Title · Payment Seq · Domain (for Rollups) · Entity · Invoice Date · Receipt URL ·
+Schedule · Tax Amount · Total Amount
+
+**Query URL:**
+```
+https://www.notion.so/33e07e366ebf81f2844cc8bb5ca42db9?v=33e07e366ebf811e86e2000ceb0d217e
+```
+
+---
+
+## SQLite Query Reference
+
+Use these table definitions with the `notion-query-database-view` tool for filtering.
+Note: relation and rollup columns return URLs, not values — fetch the related record separately.
+
+### Payment Schedules
+```sql
+SELECT url, "Schedule Name", "Schedule Status", "Budget Month", "Expected Amount",
+       "Account", "Service (Defaults)",
+       "date:Next Payment Due:start", "date:Billing Date:start",
+       "date:Billing Start Date:start", "date:Billing End Date:start",
+       "date:Payment Risk Timeline:start", "Payments", "Notes"
+FROM "collection://33e07e36-6ebf-81f4-95a3-000bc103952a"
+WHERE "Schedule Status" = 'Active'
+ORDER BY "date:Next Payment Due:start" ASC
+```
+
+### Payments — pending only
+```sql
+SELECT url, "Payment ID", "Payment Status", "Payment Method", "Currency",
+       "Base Amount", "Tax Amount", "Account", "Schedule",
+       "date:Payment Date:start", "date:Invoice Date:start"
+FROM "collection://33e07e36-6ebf-811b-93c4-000b3f320eeb"
+WHERE "Payment Status" = 'Pending'
+```
+
+### Domains expiring soon
+```sql
+SELECT url, "Domain Name", "Domain Status", "date:Expiry Date:start",
+       "Registrar Account", "Payment Schedules"
+FROM "collection://33e07e36-6ebf-812b-9f26-000b02522d56"
+WHERE "Domain Status" IN ('Active', 'Pending Renewal')
+ORDER BY "date:Expiry Date:start" ASC
+```
+
+---
+
+# PART 4 — FORMULAS
+
+All formula properties across all databases. Formulas are read-only — cannot be set via API.
+To update a formula expression, use `notion-update-data-source` with DDL:
+`ALTER COLUMN "Name" SET FORMULA('expression')`
+
+**⚠️ IMPORTANT:** `formulaCode://` URLs cannot be fetched via the `notion-fetch` tool.
+To read the raw formula expression, open the database in Notion UI or check the Schema Viewing Layout page.
+
+**formulaResult:// in query output** = formula resultType mismatch — the formula is returning a value
+that doesn't match the stored resultType. Queries will show a URL instead of the actual value.
+Fix: ALTER COLUMN to correct resultType.
+
+---
+
+## Payment Schedules - MAIN
+
+| Property | Expression (inferred) | Should return | Stored as | Status |
+|----------|----------------------|---------------|-----------|--------|
+| Cutoff Estimate | dateAdd(prop("Next Payment Due"), toNumber(prop("Service Grace Days")), "days") | date | text | ⚠️ MALFORMED |
+| At-Risk Start | dateSubtract(prop("Next Payment Due"), toNumber(prop("Service At-Risk Lead Days")), "days") | date | text | ⚠️ MALFORMED |
+
+**Formula code references (internal, not fetchable):**
+- Cutoff Estimate: `formulaCode://33e07e36-6ebf-81f4-95a3-000bc103952a/bEpPXw`
+- At-Risk Start: `formulaCode://33e07e36-6ebf-81f4-95a3-000bc103952a/bHFRQQ`
+
+**Risk window logic:**
+```
+At-Risk Start  =  Next Payment Due  −  Service At-Risk Lead Days   (earliest point to act)
+Cutoff Estimate = Next Payment Due  +  Service Grace Days          (last point before impact)
+```
+
+---
+
+## Payments - MAIN
+
+| Property | Expression (inferred) | Should return | Stored as | Status |
+|----------|----------------------|---------------|-----------|--------|
+| Payment Code | "PAY-" + lpad(str(prop("Payment Seq")), 4, "0") | text | text | ✓ OK |
+| Total Amount | prop("Base Amount") + if(empty(prop("Tax Amount")), 0, prop("Tax Amount")) | number | text | ⚠️ MALFORMED |
+
+**Formula code references (internal, not fetchable):**
+- Payment Code: `formulaCode://33e07e36-6ebf-811b-93c4-000b3f320eeb/e2pFTA`
+- Total Amount: `formulaCode://33e07e36-6ebf-811b-93c4-000b3f320eeb/e3p7Xg`
+
+---
+
+## Services - MAIN
+
+| Property | Expression | Should return | Notes |
+|----------|-----------|---------------|-------|
+| Service Seq | auto (not a formula) | number | Auto ID |
+| Service Code | inferred: code from Service Seq | text | Unknown exact expression |
+| Service ID | inferred: formatted ID | text | Unknown exact expression |
+
+**Formula code references:**
+- Service Code: `formulaCode://33e07e36-6ebf-811e-9218-000b1ff25014/aEdnUQ`
+- Service ID: `formulaCode://33e07e36-6ebf-811e-9218-000b1ff25014/WlQ6Sg`
+
+---
+
+## Accounts - MAIN
+
+| Property | Expression / Purpose | Notes |
+|----------|---------------------|-------|
+| Account ID | Formatted account ID (e.g. ACC-XXXX) | Rolled up to Payment Schedules.Account ID |
+| Account Display Name | Formatted for display | |
+| Copy Email | Copies email address | |
+| Complete API | API connection string | |
+| Change Diff | Tracks changes | |
+| Expected Annual Cost | Calculated annual cost | |
+| Health Status | Account health flag | |
+| Profile Info | Formatted profile summary | |
+| Secret Name | Credential/secret label | |
+| User Login | Login string | |
+| Formula | (generic formula property) | |
+
+**Formula code references:**
+- Account ID: `formulaCode://33e07e36-6ebf-8162-8550-000bc09d064e/ZUpDaw`
+- Account Display Name: `formulaCode://33e07e36-6ebf-8162-8550-000bc09d064e/aVBfXA`
+- Expected Annual Cost: `formulaCode://33e07e36-6ebf-8162-8550-000bc09d064e/VUF5bQ`
+- Health Status: `formulaCode://33e07e36-6ebf-8162-8550-000bc09d064e/c0FIOw`
+
+---
+
+## Domains - MAIN
+
+| Property | Expression / Purpose | Notes |
+|----------|---------------------|-------|
+| Domain ID | Formatted domain identifier | |
+| Created Date | Derived from override or system date | |
+| Days Until Expiry | today() to Expiry Date difference | |
+| Renewal Risk Level | Risk classification by days-until-expiry threshold | |
+
+**Formula code references:**
+- Domain ID: `formulaCode://33e07e36-6ebf-812b-9f26-000b02522d56/QXRFYA`
+- Created Date: `formulaCode://33e07e36-6ebf-812b-9f26-000b02522d56/OktiWg`
+- Days Until Expiry: `formulaCode://33e07e36-6ebf-812b-9f26-000b02522d56/WVNvcg`
+- Renewal Risk Level: `formulaCode://33e07e36-6ebf-812b-9f26-000b02522d56/P2dPQw`
+
+---
+
+# PART 5 — AUTOMATIONS
+
+Automations are things the workspace does automatically: rollups that aggregate data across
+relations, buttons that trigger actions, and sequence IDs that auto-increment on record creation.
+
+## Rollup Chains — Payment Schedules
+
+Each rollup reads through a relation and surfaces a value from the target database.
+
+```
+Payment Schedules.Account ID
+  via relation: Account → Accounts
+  reads: Account ID (formula)
+  purpose: display account ID without opening the account record
+
+Payment Schedules.Billing Cycle
+  via relation: Account → Accounts
+  reads: Billing Cycle (select)
+
+Payment Schedules.Auto Renewal
+  via relation: Account → Accounts
+  reads: Default Auto Renewal (checkbox)
+
+Payment Schedules.Service
+  via relation: Account → Accounts
+  reads: Service (relation → Services)
+  purpose: surface which service is linked to the account
+
+Payment Schedules.Service Grace Days
+  via relation: Service (Defaults) → Services
+  reads: Grace Days (number)
+  purpose: feeds Cutoff Estimate formula
+
+Payment Schedules.Service At-Risk Lead Days
+  via relation: Service (Defaults) → Services
+  reads: At-Risk Lead Days (number)
+  purpose: feeds At-Risk Start formula
+
+Payment Schedules.Service Risk Timeline
+  via relation: Service (Defaults) → Services
+  reads: Payment Risk Timeline (text)
+  purpose: display risk window description
+
+Payment Schedules.Service Risk Note
+  via relation: Service (Defaults) → Services
+  reads: Risk Note (text)
+  purpose: display what happens at cutoff
+```
+
+## Rollup Chains — Payments
+
+```
+Payments.Service
+  via relation: Account → Accounts
+  reads: Service (relation → Services)
+
+Domains.Last Payment Amount
+  via relation: Domain (for Rollups) → Payments
+  reads: Total Amount (formula)
+  aggregation: latest
+
+Domains.Last Payment Date
+  via relation: Domain (for Rollups) → Payments
+  reads: Payment Date (date)
+  aggregation: latest_date
+```
+
+## Rollup Chains — Accounts
+
+```
+Accounts.Default Billing Cycle
+  via relation: Service → Services
+  reads: Billing Cycle (select)
+
+Accounts.Default Payment Method
+  via relation: Service → Services
+  reads: Payment Method (select)
+
+Accounts.Service Category
+  via relation: Service → Services
+  reads: Service Category (select)
+
+Accounts.Service Grace Days
+  via relation: Service → Services
+  reads: Grace Days (number)
+
+Accounts.Service At-Risk Lead Days
+  via relation: Service → Services
+  reads: At-Risk Lead Days (number)
+
+Accounts.Risk Level
+  via relation: Service → Services
+  reads: Risk Level (select)
+
+Accounts.Login URL
+  via relation: Service → Services
+  reads: Dashboard URL (url)
+
+Accounts.Department
+  via relation: End-User → Departments
+  reads: Department (select)
+
+Accounts.Next Payment Due
+  via relation: Payments → Payments
+  reads: Payment Date (date)
+  aggregation: latest
+
+Accounts.API Balance Tracking
+  via relation: Service → Services
+  reads: API Balance Tracking (select)
+
+Accounts.Business Code
+  via relation: Business Name → Business Reference
+  reads: Business Code (text)
+
+Accounts.Business Type
+  via relation: Business Name → Business Reference
+  reads: Business Type (select)
+```
+
+## Rollup Chains — Services
+
+```
+Services.Department
+  via relation: End-User (For Rollup) → Departments
+  reads: Department (select on Departments)
+
+Services.Email Accounts
+  via relation: Accounts (back-relation) → Accounts
+  reads: Email Account (relation → Email Accounts)
+```
+
+## Buttons
+
+Buttons are UI-only actions. They CANNOT be triggered via the Notion API or MCP tools.
+To execute a button action, open the record in Notion UI and click the button.
+
+| Database | Button Name | What it does |
+|----------|-------------|--------------|
+| Payments | Apply Auto Title | Copies Payment Code formula value → Payment ID (title). Use when Payment ID is empty. |
+| Payments | Create Payment Task | Creates a new Task linked to this payment record. |
+| Accounts | Add Titlle [sic] | Adds/updates account title |
+| Accounts | Add to API Balances Sync | Adds this account to the API balance sync process |
+| Domains | Create Renewal Task | Creates a renewal task for this domain |
+
+## Auto-Increment IDs
+
+| Database | Property | Format |
+|----------|----------|--------|
+| Payment Schedules | Schedule Seq | Integer (1, 2, 3…) |
+| Payments | Payment Seq | Integer — also drives Payment Code formula ("PAY-000X") |
+| Services | Service Seq | Integer |
+| Accounts | Account Seq | Integer — also drives Account ID formula ("ACC-XXXX") |
+| Domains | Domain Seq | Integer — also drives Domain ID formula |
+
+---
+
+# PART 6 — KNOWN ISSUES
+
+All issues confirmed from live schema reads and Schema Viewing Layout pages.
+Require an SCR (Schema Change Request) to fix.
+
+## Formula Result Type Mismatches
+
+| # | Database | Property | Stored resultType | Should be | Fix |
+|---|----------|----------|-------------------|-----------|-----|
+| 1 | Payment Schedules | Cutoff Estimate | text | date | ALTER COLUMN with correct dateAdd expression |
+| 2 | Payment Schedules | At-Risk Start | text | date | ALTER COLUMN with correct dateSubtract expression |
+| 3 | Payments | Total Amount | text | number | ALTER COLUMN with correct addition expression |
+
+**Effect:** When resultType is wrong, query results return a `formulaResult://...` URL string
+instead of the actual computed value. The formula still computes — it just cannot be read
+programmatically until resultType is corrected.
+
+## Duplicate/Ambiguous Relations
+
+| # | Database | Issue | Recommendation |
+|---|----------|-------|----------------|
+| 4 | Payments | Two Domain relations: "Domain" (limit 1, one-way) and "Domain (for Rollups)" (multi, two-way) | Decide if both needed. If not, backfill "Domain" from "Domain (for Rollups)" and drop the duplicate. |
+| 5 | Payment Schedules | "Service (Defaults)" relation AND "Service" rollup via Account both surface service info | Confirm if direct Services relation is needed for override scenarios; document distinct purpose or remove. |
+| 6 | Services | "Accounts" and "Accounts 1" — two relations to Accounts | Confirm if "Accounts 1" is legacy; if so, remove after migrating any data. |
+
+## Naming Ambiguity
+
+| # | Database | Issue | Recommendation |
+|---|----------|-------|----------------|
+| 7 | Payments | Payment ID (title) + Payment Code (formula) overlap — Apply Auto Title copies Code → ID | Confirm Payment Code as canonical ID; document which field is the user-facing identifier. |
+| 8 | Accounts | Button named "Add Titlle" (double L) — likely typo | Rename to "Add Title" via DDL RENAME. |
+
+## Data Gaps (as of 2026-06-01)
+
+| Database | Record | Missing Fields | Action |
+|----------|--------|---------------|--------|
+| Payment Schedules | Seq 2 (https://www.notion.so/33e07e366ebf811e9597d71570be057a) | Schedule Name, Account, Service (Defaults) | Fill or delete |
+| Payment Schedules | Seq 3 (https://www.notion.so/36a07e366ebf808dbbe9c554430e7138) | Schedule Name, Schedule Status, Service (Defaults), Next Payment Due | Fill or delete |
+| Payments | Seq 1 (https://www.notion.so/33e07e366ebf817f8cf6e58304773908) | Payment ID empty | Press Apply Auto Title in UI |
+| Payments | Seq 2 (https://www.notion.so/33e07e366ebf8164a58ef8e6ee204c62) | All fields empty | Fill or delete |
+| Payments | Seq 3 (https://www.notion.so/33e07e366ebf81eab3a9da4f76542003) | All fields empty | Fill or delete |
+
+---
+
+# PART 7 — MCP TOOL PATTERNS
+
+How to work with the NCC Notion workspace using the available Notion MCP tools.
+
+## Tool Reference
+
+| Tool | Use for |
+|------|---------|
+| `notion-fetch` | Read a page, database, or data source by URL or ID |
+| `notion-query-database-view` | Query records from a database view |
+| `notion-update-page` | Update properties on an existing record |
+| `notion-create-pages` | Create new records in a database |
+| `notion-update-data-source` | Change database schema (DDL) |
+| `notion-create-comment` | Add a comment to a record |
+| `notion-search` | Full-text search across workspace |
+| `notion-create-view` | Add a new view to a database |
+| `notion-update-view` | Modify an existing view |
+
+## Fetch Patterns
+
+```json
+// Fetch a page
+{ "id": "https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82" }
+
+// Fetch a data source (full schema)
+{ "id": "collection://33e07e36-6ebf-81f4-95a3-000bc103952a" }
+
+// Fetch a specific record
+{ "id": "https://www.notion.so/33e07e366ebf81b885c6f3f7a47ea978" }
+```
+
+## Query Patterns
+
+View URL format: `https://www.notion.so/{db-no-dashes}?v={view-no-dashes}`
+
+```json
+// Query Payment Schedules default view
+{ "view_url": "https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82?v=33e07e366ebf81b990ed000cd1f708cd" }
+
+// Query Recovery Audit view
+{ "view_url": "https://www.notion.so/33e07e366ebf816f8f39d1f8208edf82?v=33e07e366ebf81159 2ef000c0784739c" }
+
+// Query Payments default view
+{ "view_url": "https://www.notion.so/33e07e366ebf81f2844cc8bb5ca42db9?v=33e07e366ebf811e86e2000ceb0d217e" }
+```
+
+## Update Page Properties
+
+Date properties use the expanded format — three separate keys per date field:
+```json
+{
+  "pageId": "https://www.notion.so/RECORD_URL",
+  "properties": {
+    "date:Next Payment Due:start": "2026-07-15",
+    "date:Next Payment Due:end": null,
+    "date:Next Payment Due:is_datetime": 0,
+    "Schedule Status": "Active",
+    "Expected Amount": 149.99,
+    "Notes": "Updated by automation"
+  }
+}
+```
+
+Relation properties:
+- Single-limit relation: JSON string `"[\"https://www.notion.so/PAGE_URL\"]"`
+- Multi relation: JSON array `"[\"https://www.notion.so/URL1\",\"https://www.notion.so/URL2\"]"`
+
+Checkbox properties:
+- `"__YES__"` = true
+- `"__NO__"` = false
+
+## Schema Update (DDL)
+
+```json
+{
+  "data_source_id": "collection://33e07e36-6ebf-81f4-95a3-000bc103952a",
+  "statements": "ALTER COLUMN \"Cutoff Estimate\" SET FORMULA('dateAdd(prop(\"Next Payment Due\"), toNumber(prop(\"Service Grace Days\")), \"days\")')"
+}
+```
+
+DDL type syntax reference:
+```
+TITLE
+RICH_TEXT
+DATE
+NUMBER [FORMAT 'dollar']
+CHECKBOX
+URL
+EMAIL
+PHONE_NUMBER
+STATUS
+FILES
+SELECT('opt1':color, 'opt2':color)
+MULTI_SELECT('opt1':color, 'opt2':color)
+FORMULA('expression')
+RELATION('collection://ds_id')
+RELATION('collection://ds_id', DUAL)
+RELATION('collection://ds_id', DUAL 'synced_name' 'synced_id')
+ROLLUP('relation_property', 'target_property', 'function')
+UNIQUE_ID [PREFIX 'X']
+```
+
+## Constraints and Gotchas
+
+| Constraint | Detail |
+|-----------|--------|
+| formulaCode:// | Not fetchable — returns validation_error. Check Schema Viewing Layout or Notion UI for expression. |
+| formulaResult:// in queries | Formula resultType mismatch. The formula works but the value can't be read programmatically until resultType is fixed. |
+| Buttons | Cannot be triggered via API. Must use Notion UI. |
+| auto_increment_id, formula, rollup | Always read-only. Never write to these properties. |
+| Relations (pre-query) | Relation columns return page URLs. To get the linked record's data, fetch each URL separately or query the related database. |
+| Before any DDL | Read the Schema Viewing Layout page for the target database first. |
+| Every schema change | Requires an SCR (Schema Change Request) — no undocumented changes. |
+| formulaCode vs formulaResult | formulaCode:// = the formula's source code reference (not fetchable). formulaResult:// = the formula's output for a specific record (what you see in query results when resultType is wrong). |
+
+---
+
+# APPENDIX — Agent Role Files
+
+NCC agent roles as configured in ByteHub:
+
+| Agent | Model | Notion Role File | ECC Skill |
+|-------|-------|-----------------|-----------|
+| NCC Architect | Codex | https://www.notion.so/33e07e366ebf8148895edc8c3aaa3495 | skills/notion-schema-architect/SKILL.md |
+| NCC API Executor | Codex | https://www.notion.so/33e07e366ebf815b9e71c971ceadd580 | skills/notion-api-executor/SKILL.md |
+| NCC Docs & Design | Claude | https://www.notion.so/33e07e366ebf8192b570c735faf7f7f3 | skills/notion-docs-designer/SKILL.md |
+| NCC Auditor | Claude | https://www.notion.so/33e07e366ebf817683e0cbdf0f2144cd | skills/notion-auditor/SKILL.md |
+
+ECC repo branch: `claude/magical-newton-WE8Ap` on `klodebeers/everything-claude-code`
